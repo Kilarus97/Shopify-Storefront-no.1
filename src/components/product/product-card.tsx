@@ -9,6 +9,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  // Shopify vraća variants kao { edges: [{ node: {...} }] }
   const firstVariant = product.variants?.[0];
   const isAvailable = firstVariant?.availableForSale ?? false;
   const isNew = product.tags?.includes('new');
@@ -32,7 +33,7 @@ export function ProductCard({ product }: ProductCardProps) {
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-secondary-300">
+          <div className="flex h-full items-center justify-center text-secondary-300 text-sm">
             No image
           </div>
         )}
@@ -53,13 +54,11 @@ export function ProductCard({ product }: ProductCardProps) {
         {product.vendor && (
           <p className="text-xs text-secondary-400">{product.vendor}</p>
         )}
-        {firstVariant && (
-          <Price
-            price={firstVariant.price}
-            compareAtPrice={firstVariant.compareAtPrice}
-            className="mt-1"
-          />
-        )}
+        <Price
+          price={firstVariant.price}
+          compareAtPrice={firstVariant.compareAtPrice}
+          className="mt-1"
+        />
       </div>
     </Link>
   );

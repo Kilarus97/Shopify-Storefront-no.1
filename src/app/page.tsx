@@ -15,8 +15,8 @@ export default async function HomePage() {
     featured = data.featured;
     latest = data.latest;
     collections = data.collections;
-  } catch {
-    // Shopify not configured yet
+  } catch (error) {
+    console.error('❌ Home page data fetch failed:', error);
   }
 
   return (

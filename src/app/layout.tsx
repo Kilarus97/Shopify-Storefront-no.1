@@ -19,10 +19,9 @@ export default async function RootLayout({
   try {
     const data = await getCollections({ first: 10 });
     collections = data.collections.map((c) => ({ handle: c.handle, title: c.title }));
-  } catch {
-    // Gracefully handle missing Shopify config during setup
+  } catch (error) {
+    console.error('❌ Collections fetch failed:', error);
   }
-
   return (
     <html lang="en" className="h-full antialiased">
       <head>
