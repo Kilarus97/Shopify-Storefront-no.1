@@ -45,7 +45,7 @@ export interface ShopifyImage {
     tags: string[];
     featuredImage: ShopifyImage | null;
     images: ShopifyImage[];
-    variants: ProductVariant[];        // ← ovo je niz
+    variants: ProductVariant[];
     priceRange: {
       minVariantPrice: MoneyV2;
       maxVariantPrice: MoneyV2;

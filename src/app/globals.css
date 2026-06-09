@@ -28,3 +28,38 @@
     outline-offset: 2px;
   }
 }
+
+
+@layer components {
+  .prose {
+    @apply text-secondary-600;
+  }
+
+  .prose p {
+    @apply mb-4 leading-relaxed;
+  }
+
+  .prose h1, .prose h2, .prose h3 {
+    @apply font-heading font-semibold text-secondary-900 mt-6 mb-3;
+  }
+
+  .prose ul, .prose ol {
+    @apply ml-6 mb-4;
+  }
+
+  .prose li {
+    @apply mb-1;
+  }
+
+  .prose strong {
+    @apply font-semibold text-secondary-900;
+  }
+
+  .prose a {
+    @apply text-primary-600 underline hover:text-primary-700;
+  }
+
+  .prose br {
+    @apply block mb-2;
+  }
+}
