@@ -1,10 +1,16 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
+import { cn } from '@/lib/utils/cn';
 
 interface HeaderProps {
   collections: Array<{ handle: string; title: string }>;
 }
 
 export function Header({ collections }: HeaderProps) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-secondary-200 bg-white/80 backdrop-blur-md">
       <nav className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
@@ -15,16 +21,11 @@ export function Header({ collections }: HeaderProps) {
 
         {/* Desktop Nav */}
         <ul className="hidden md:flex items-center gap-6">
-          {collections.map((collection) => (
-            <li key={collection.handle}>
-              <Link
-                href={`/collections/${collection.handle}`}
-                className="text-sm font-medium text-secondary-600 transition-colors hover:text-primary-600"
-              >
-                {collection.title}
-              </Link>
-            </li>
-          ))}
+          <li>
+            <Link href="/collections" className="text-sm font-medium text-secondary-600 hover:text-primary-600 transition-colors">
+              All Collections
+            </Link>
+          </li>
         </ul>
 
         {/* Actions */}
@@ -58,8 +59,42 @@ export function Header({ collections }: HeaderProps) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 4.5A.25.25 0 0 1 2.5 4.25h.075a.25.25 0 0 1 .175.075L5.25 7l1.825-2.675A.25.25 0 0 1 7.25 4.25h.075a.25.25 0 0 1 .25.25v15a.25.25 0 0 1-.25.25H2.5a.25.25 0 0 1-.25-.25v-15ZM15.75 4.5a.25.25 0 0 1 .25.25v15a.25.25 0 0 1-.25.25H8.5a.25.25 0 0 1-.25-.25v-15a.25.25 0 0 1 .25-.25h7.25ZM21.75 10.5a2.25 2.25 0 0 0-2.25-2.25h-1.5V18h1.5a2.25 2.25 0 0 0 2.25-2.25v-5.25Z" />
             </svg>
           </Link>
+
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 text-secondary-500"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+              </svg>
+            )}
+          </button>
         </div>
       </nav>
+
+      {/* Mobile menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-secondary-200 bg-white">
+          <ul className="container mx-auto px-4 py-4 space-y-3">
+            <li>
+              <Link
+                href="/collections"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-sm font-medium text-secondary-600 hover:text-primary-600"
+              >
+                All Collections
+              </Link>
+            </li>
+          </ul>
+        </div>
+      )}
     </header>
   );
 }

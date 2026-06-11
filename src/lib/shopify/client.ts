@@ -38,7 +38,7 @@ export async function shopifyFetch<T>({
 
   // ← DODAJ OVO
   const text = await response.text();
-  console.log('📡 Shopify raw response:', text);
+  //console.log('📡 Shopify raw response:', text);
 
   let json;
   try {
