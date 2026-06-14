@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
-import { getCollections } from '@/lib/shopify';
+import { CartProvider } from '@/lib/context/cart-context';
+import { CartDrawer } from '@/components/cart/cart-drawer';
+import { getCollections } from '@/lib/shopify/collection';
 
 export const metadata: Metadata = {
   title: 'Shopify Storefront',
@@ -14,14 +16,14 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Fetch collections for navigation (cached at edge)
   let collections: Array<{ handle: string; title: string }> = [];
   try {
-    const data = await getCollections({ first: 10 });
-    collections = data.collections.map((c) => ({ handle: c.handle, title: c.title }));
-  } catch (error) {
-    console.error('❌ Collections fetch failed:', error);
+    const data = await getCollections();
+    collections = data.map((c) => ({ handle: c.handle, title: c.title }));
+  } catch (err) {
+    console.error('❌ Collections fetch failed:', err);
   }
+
   return (
     <html lang="en" className="h-full antialiased">
       <head>
@@ -33,9 +35,12 @@ export default async function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col font-sans bg-white text-secondary-900">
-        <Header collections={collections} />
-        <main className="flex-1">{children}</main>
-        <Footer collections={collections} />
+        <CartProvider>
+          <Header collections={collections} />
+          <main className="flex-1">{children}</main>
+          <Footer collections={collections} />
+          <CartDrawer />
+        </CartProvider>
       </body>
     </html>
   );
