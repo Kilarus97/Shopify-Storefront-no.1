@@ -2,7 +2,7 @@ import { shopifyFetch } from './client';
 
 const CUSTOMER_ACCESS_TOKEN = process.env.SHOPIFY_CUSTOMER_ACCESS_TOKEN || '';
 
-interface CustomerResponse {
+export interface CustomerResponse {
   customer: {
     id: string;
     email: string;

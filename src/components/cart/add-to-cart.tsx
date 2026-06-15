@@ -28,7 +28,8 @@ export function AddToCart({ product, variant, quantity = 1, className }: AddToCa
     setIsPending(true);
 
     const cartItem: CartItem = {
-      id: selectedVariant.id,
+      id: selectedVariant.id,       // za cart identifikaciju
+      variantId: selectedVariant.id, // Shopify variant id
       productId: product.id,
       title: product.title,
       handle: product.handle,

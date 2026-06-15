@@ -1,5 +1,6 @@
 export interface CartItem {
-    id: string;           // variant id
+    id: string;           // cart item id (unique per cart)
+    variantId: string;    // Shopify variant id (gid://shopify/ProductVariant/...)
     productId: string;
     title: string;
     handle: string;
