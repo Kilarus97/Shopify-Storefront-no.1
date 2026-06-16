@@ -2,7 +2,8 @@ export const SHOPIFY_STORE_DOMAIN = process.env.PUBLIC_STORE_DOMAIN || '';
 //export const SHOPIFY_STOREFRONT_ID = process.env.PUBLIC_STOREFRONT_ID || '';
 export const SHOPIFY_STOREFRONT_ACCESS_TOKEN: string = process.env.PUBLIC_STOREFRONT_ACCESS_TOKEN || '';
 export const SHOPIFY_STORE_PASSWORD = process.env.SHOPIFY_STORE_PASSWORD || '';
-export const PUBLIC_URL = process.env.PUBLIC_URL || 'http://localhost:3000';
+export const NEXT_PUBLIC_STORE_URL = process.env.NEXT_PUBLIC_STORE_URL || 'http://localhost:3000';
+export const ADMIN_API_VERSION = '2024-01';
 
 export const SHOPIFY_GRAPHQL_ENDPOINT = `https://${SHOPIFY_STORE_DOMAIN}/api/2024-04/graphql.json`;
 

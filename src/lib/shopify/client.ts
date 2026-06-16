@@ -1,6 +1,7 @@
 import {
   SHOPIFY_GRAPHQL_ENDPOINT,
   SHOPIFY_STOREFRONT_ACCESS_TOKEN,
+  SHOPIFY_STORE_PASSWORD,
 } from '@/lib/constants';
 
 interface ShopifyFetchOptions {
@@ -26,10 +27,14 @@ export async function shopifyFetch<T>({
     headers: {
       'Content-Type': 'application/json',
       'X-Shopify-Storefront-Access-Token': SHOPIFY_STOREFRONT_ACCESS_TOKEN,
+      'Shopify-Storefront-Private-Token': SHOPIFY_STORE_PASSWORD,
     },
     body: JSON.stringify({ query, variables }),
-  };
 
+  };
+  
+
+  
   if (revalidate) {
     fetchOptions.next = { revalidate, ...(tags ? { tags } : {}) };
   }

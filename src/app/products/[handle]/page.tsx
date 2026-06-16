@@ -5,7 +5,7 @@ import { generateMetadata as genMeta, generateProductJsonLd, generateBreadcrumbJ
 import { ProductGallery } from '@/components/product/product-gallery';
 import { ProductInfo } from '@/components/product/product-info';
 import { ProductVariants } from '@/components/product/product-variants';
-import { AddToCartButton } from '@/components/product/add-to-cart-button';
+import { AddToCart } from '@/components/cart/add-to-cart';
 import { RelatedProducts } from '@/components/product/related-products';
 import { Breadcrumbs } from '@/components/layout/breadcrumbs';
 import { JsonLd } from '@/components/seo/json-ld';
@@ -87,8 +87,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
               />
             )}
 
-            <AddToCartButton
-              available={product.variants?.some((v) => v.availableForSale) ?? false}
+            <AddToCart
+              className="w-full rounded-lg bg-primary-500 py-2.5 text-sm font-medium text-black  hover:bg-primary-600 transition-colors border border-black"
+              product={product}
+              variant={product.variants?.[0]}
             />
           </div>
         </div>
