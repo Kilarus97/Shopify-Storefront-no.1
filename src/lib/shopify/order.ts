@@ -16,9 +16,6 @@ export async function createOrder(
         order {
           id
           name
-          totalPriceSet {
-            shopMoney { amount currencyCode }
-          }
         }
         userErrors {
           message
@@ -33,7 +30,6 @@ export async function createOrder(
       order: {
         id: string;
         name: string;
-        totalPriceSet: { shopMoney: { amount: string; currencyCode: string } };
       } | null;
       userErrors: Array<{ message: string; field: string[] }>;
     };
@@ -44,13 +40,6 @@ export async function createOrder(
         lineItems: cart.items.map((item) => ({
           variantId: item.variantId,
           quantity: item.quantity,
-          // ✅ priceSet umesto originalUnitPriceSet
-          priceSet: {
-            shopMoney: {
-              amount: item.price.toString(),
-              currencyCode: 'USD',
-            },
-          },
         })),
         email,
         shippingAddress: {
@@ -64,21 +53,7 @@ export async function createOrder(
           countryCode: mapCountryToCode(shippingAddress.country),
           phone: shippingAddress.phone || '',
         },
-        // ✅ totalPriceSet se UKLANJA - Shopify ga sam računa
-        // ✅ title se uklanja sa lineItems - nije podržano
         financialStatus: 'PENDING',
-        // ✅ Shipping line dodaj ovako ako hoćeš da se prikaže shipping cena
-        shippingLines: [
-          {
-            title: 'Standard Shipping',
-            priceSet: {
-              shopMoney: {
-                amount: shippingPrice.toFixed(2),
-                currencyCode: 'USD',
-              },
-            },
-          },
-        ],
       },
     },
   });

@@ -164,11 +164,6 @@ export function CartDrawer() {
                   View Cart
                 </Button>
               </Link>
-              <Link href="/checkout" onClick={() => setIsOpen(false)}>
-                <Button className="w-full" variant="outline" size="lg">
-                  Checkout
-                </Button>
-              </Link>
             </div>
           )}
         </div>

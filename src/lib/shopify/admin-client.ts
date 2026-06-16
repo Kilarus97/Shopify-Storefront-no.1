@@ -1,5 +1,5 @@
 import { SHOPIFY_STORE_DOMAIN } from '@/lib/constants';
-import { getAdminAccessToken } from './admin-token';
+import { ADMIN_API_VERSION } from '@/lib/constants';
 
 interface AdminFetchOptions {
   query: string;
@@ -10,28 +10,29 @@ export async function shopifyAdminFetch<T>({
   query,
   variables,
 }: AdminFetchOptions): Promise<{ data: T }> {
-  const token = await getAdminAccessToken();
-  
+  const token = process.env.SHOPIFY_ADMIN_API_TOKEN;
+  const endpoint = `https://${SHOPIFY_STORE_DOMAIN}/admin/api/${ADMIN_API_VERSION}/graphql.json`;
 
-  const response = await fetch(
-    `https://${SHOPIFY_STORE_DOMAIN}/admin/api/2024-01/graphql.json`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Shopify-Access-Token': token,
-      },
-      body: JSON.stringify({ query, variables }),
-    }
-  );
+  console.log('📡 Admin API call:', endpoint);
 
-  if (!response.ok) {
-    const text = await response.text();
-    console.error('📡 Admin API error:', text);
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Shopify-Access-Token': token || '',
+    },
+    body: JSON.stringify({ query, variables }),
+  });
+
+  const text = await response.text();
+  console.log('📡 Admin API raw response:', text.substring(0, 500));
+
+  let json;
+  try {
+    json = JSON.parse(text);
+  } catch {
     throw new Error(`Admin API error: ${response.status}`);
   }
-
-  const json = await response.json();
 
   if (json.errors) {
     console.error('❌ Admin GraphQL errors:', json.errors);

@@ -4,11 +4,13 @@ import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/lib/context/cart-context';
 import { createOrder } from '@/lib/shopify/order';
+import { createCart } from '@/lib/shopify/cart';
 import { ShippingForm } from './shipping-form';
 import { ShippingOptions } from './shipping-options';
 import { PaymentForm } from './payment-form';
 import { OrderSummary } from './order-summary';
 import { CheckoutReview } from './checkout-review';
+import { PasswordStep } from './password-step';
 import type { ShippingAddress, ShippingOption, PaymentMethod } from '@/lib/types/checkout';
 import type { CustomerResponse } from '@/lib/shopify/customer';
 
@@ -16,12 +18,13 @@ interface CheckoutFormProps {
   customer: CustomerResponse['customer'] | null;
 }
 
-type CheckoutStep = 'shipping' | 'delivery' | 'payment' | 'review';
+type CheckoutStep = 'shipping' | 'delivery' | 'payment' | 'password' | 'review';
 
 const STEPS: { key: CheckoutStep; label: string }[] = [
   { key: 'shipping', label: 'Shipping Address' },
   { key: 'delivery', label: 'Delivery Method' },
   { key: 'payment', label: 'Payment' },
+  { key: 'password', label: 'Store Access' },
   { key: 'review', label: 'Review' },
 ];
 
@@ -38,7 +41,6 @@ export function CheckoutForm({ customer }: CheckoutFormProps) {
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
   const [note, setNote] = useState('');
-  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
 
   const currentStepIndex = STEPS.findIndex((s) => s.key === step);
 
@@ -48,31 +50,17 @@ export function CheckoutForm({ customer }: CheckoutFormProps) {
       setErrors([]);
       setShippingAddress(address);
       setEmail(emailValue);
-  
-      // Create order with Admin API
-      const result = await createOrder(cart, address, emailValue, 0);
-  
-      if (!result.success) {
-        setErrors(result.errors);
-        setIsPending(false);
-        return;
-      }
-  
-      if (result.orderId) {
-        setCheckoutUrl(`/checkout/confirmation?order=${result.orderId}&number=${result.orderNumber}`);
-      }
-  
-      // Static shipping options
+
       setShippingOptions([
-        { id: 'standard', title: 'Standard Shipping', description: '5-7 business days', price: 0 },
-        { id: 'express', title: 'Express Shipping', description: '2-3 business days', price: 15 },
-        { id: 'overnight', title: 'Overnight Shipping', description: 'Next business day', price: 30 },
+        { id: 'economy', title: 'Economy Shipping', description: '5-8 business days', price: 8 },
+        { id: 'standard', title: 'Standard Shipping', description: '3-5 business days', price: 15 },
+        { id: 'express', title: 'Express Shipping', description: '1-2 business days', price: 30 },
       ]);
-  
+
       setStep('delivery');
       setIsPending(false);
     },
-    [cart]
+    []
   );
 
   const handleShippingOptionSelect = useCallback((option: ShippingOption) => {
@@ -82,38 +70,68 @@ export function CheckoutForm({ customer }: CheckoutFormProps) {
 
   const handlePaymentSubmit = useCallback((method: PaymentMethod) => {
     setPaymentMethod(method);
+
+    // Ako je kartica/PayPal → idi na password step
+    if (method.id === 'credit_card' || method.id === 'paypal') {
+      setStep('password');
+    } else {
+      // Pouzećem → direktno na review
+      setStep('review');
+    }
+  }, []);
+
+  const handlePasswordComplete = useCallback(() => {
     setStep('review');
   }, []);
 
   const handlePlaceOrder = useCallback(async () => {
     setIsPending(true);
     setErrors([]);
-  
+
     if (!shippingAddress) {
       setErrors(['Shipping address is required']);
       setIsPending(false);
       return;
     }
-  
+
     const customerEmail = customer?.email || email;
-  
-    const result = await createOrder(
+
+    // Kartica / PayPal → Shopify Checkout
+    if (paymentMethod?.id === 'credit_card' || paymentMethod?.id === 'paypal') {
+      const result = await createCart(cart, shippingAddress, customerEmail);
+
+      if (!result.success) {
+        setErrors(result.errors);
+        setIsPending(false);
+        return;
+      }
+
+      if (result.checkoutUrl) {
+        window.open(result.checkoutUrl, '_blank');
+        clearCart();
+        router.push(`/order-confirmation?status=pending&email=${encodeURIComponent(customerEmail)}`);
+        return;
+      }
+    }
+
+    // Pouzećem → Admin API order
+    const orderResult = await createOrder(
       cart,
       shippingAddress,
       customerEmail,
       selectedShipping?.price || 0
     );
-  
-    if (!result.success) {
-      setErrors(result.errors);
+
+    if (!orderResult.success) {
+      setErrors(orderResult.errors);
       setIsPending(false);
       return;
     }
-  
+
     clearCart();
-    router.push(`/checkout/confirmation?order=${result.orderId}&number=${result.orderNumber}`);
+    router.push(`/order-confirmation?email=${encodeURIComponent(customerEmail)}&number=${orderResult.orderNumber}`);
     setIsPending(false);
-  }, [router, clearCart, cart, shippingAddress, customer, email, selectedShipping]);
+  }, [router, clearCart, cart, shippingAddress, customer, email, selectedShipping, paymentMethod]);
 
   if (cart.items.length === 0) {
     return (
@@ -134,7 +152,7 @@ export function CheckoutForm({ customer }: CheckoutFormProps) {
       {/* Left: Steps */}
       <div className="lg:col-span-2 space-y-6">
         {/* Step indicator */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {STEPS.map((s, i) => (
             <div key={s.key} className="flex items-center gap-2">
               <div
@@ -155,7 +173,7 @@ export function CheckoutForm({ customer }: CheckoutFormProps) {
               </span>
               {i < STEPS.length - 1 && (
                 <div
-                  className={`h-0.5 w-8 ${i < currentStepIndex ? 'bg-primary-500' : 'bg-secondary-200'}`}
+                  className={`h-0.5 w-6 ${i < currentStepIndex ? 'bg-primary-500' : 'bg-secondary-200'}`}
                 />
               )}
             </div>
@@ -197,6 +215,13 @@ export function CheckoutForm({ customer }: CheckoutFormProps) {
           />
         )}
 
+        {step === 'password' && (
+          <PasswordStep
+            onComplete={handlePasswordComplete}
+            onBack={() => setStep('payment')}
+          />
+        )}
+
         {step === 'review' && (
           <CheckoutReview
             cart={cart}
@@ -206,7 +231,13 @@ export function CheckoutForm({ customer }: CheckoutFormProps) {
             note={note}
             onNoteChange={setNote}
             onPlaceOrder={handlePlaceOrder}
-            onBack={() => setStep('payment')}
+            onBack={() => {
+              if (paymentMethod?.id === 'credit_card' || paymentMethod?.id === 'paypal') {
+                setStep('password');
+              } else {
+                setStep('payment');
+              }
+            }}
             isPending={isPending}
           />
         )}
