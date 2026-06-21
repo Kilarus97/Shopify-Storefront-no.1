@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
 import type { ShippingAddress } from '@/lib/types/checkout';
 import type { CustomerResponse } from '@/lib/shopify/customer';
-import { Button } from '@/components/ui/button';
 
 interface ShippingFormProps {
   customer: CustomerResponse['customer'] | null;
@@ -13,34 +13,90 @@ interface ShippingFormProps {
 
 export function ShippingForm({ customer, onSubmit, isPending }: ShippingFormProps) {
   const [email, setEmail] = useState(customer?.email || '');
-  const [address, setAddress] = useState<ShippingAddress>({
-    firstName: customer?.firstName || '',
-    lastName: customer?.lastName || '',
-    address1: '',
-    address2: '',
-    city: '',
-    province: '',
-    zip: '',
-    country: 'US',
-    phone: customer?.phone || '',
-  });
+  const [firstName, setFirstName] = useState(customer?.firstName || '');
+  const [lastName, setLastName] = useState(customer?.lastName || '');
+  const [address1, setAddress1] = useState('');
+  const [address2, setAddress2] = useState('');
+  const [city, setCity] = useState('');
+  const [province, setProvince] = useState('');
+  const [zip, setZip] = useState('');
+  const [country, setCountry] = useState('US');
+  const [phone, setPhone] = useState('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setAddress((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  // Popuni formu sa default adresom korisnika
+  const handleUseDefaultAddress = () => {
+    if (!customer?.defaultAddress) return;
+
+    const addr = customer.defaultAddress;
+    setFirstName(addr.firstName);
+    setLastName(addr.lastName);
+    setAddress1(addr.address1);
+    setAddress2(addr.address2 || '');
+    setCity(addr.city);
+    setProvince(addr.province);
+    setZip(addr.zip);
+    setCountry(addr.country);
+    setPhone(addr.phone || '');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(address, email);
+    onSubmit(
+      {
+        firstName,
+        lastName,
+        address1,
+        address2,
+        city,
+        province,
+        zip,
+        country,
+        phone,
+      },
+      email
+    );
   };
 
+  const hasDefaultAddress = !!customer?.defaultAddress;
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-secondary-900 mb-4">Contact Information</h2>
+        <h2 className="text-lg font-semibold text-secondary-900 mb-2">Shipping Address</h2>
+        <p className="text-sm text-secondary-500">
+          Enter your shipping address for this order.
+        </p>
+      </div>
+
+      {/* Use Default Address dugme */}
+      {hasDefaultAddress && (
+        <div className="rounded-lg border border-primary-200 bg-primary-50 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-primary-800">Use your default address</p>
+              <p className="text-xs text-primary-600 mt-0.5">
+                {customer?.defaultAddress?.firstName} {customer?.defaultAddress?.lastName},{' '}
+                {customer?.defaultAddress?.address1}, {customer?.defaultAddress?.city}
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleUseDefaultAddress}
+              className="border-primary-300 text-primary-700 hover:bg-primary-100"
+            >
+              Use Default
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Email */}
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-secondary-700 mb-1">
-            Email
+            Email Address
           </label>
           <input
             id="email"
@@ -48,27 +104,24 @@ export function ShippingForm({ customer, onSubmit, isPending }: ShippingFormProp
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-secondary-300 px-3 py-2 text-sm"
-            placeholder="john@example.com"
+            className="w-full rounded-lg border border-secondary-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
+            placeholder="you@example.com"
           />
         </div>
-      </div>
 
-      <div>
-        <h2 className="text-lg font-semibold text-secondary-900 mb-4">Shipping Address</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* First / Last Name */}
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="firstName" className="block text-sm font-medium text-secondary-700 mb-1">
               First Name
             </label>
             <input
               id="firstName"
-              name="firstName"
               type="text"
               required
-              value={address.firstName}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-secondary-300 px-3 py-2 text-sm"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              className="w-full rounded-lg border border-secondary-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
             />
           </div>
           <div>
@@ -77,82 +130,76 @@ export function ShippingForm({ customer, onSubmit, isPending }: ShippingFormProp
             </label>
             <input
               id="lastName"
-              name="lastName"
               type="text"
               required
-              value={address.lastName}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-secondary-300 px-3 py-2 text-sm"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              className="w-full rounded-lg border border-secondary-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
             />
           </div>
-          <div className="sm:col-span-2">
-            <label htmlFor="address1" className="block text-sm font-medium text-secondary-700 mb-1">
-              Address
-            </label>
-            <input
-              id="address1"
-              name="address1"
-              type="text"
-              required
-              value={address.address1}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-secondary-300 px-3 py-2 text-sm"
-              placeholder="Street address"
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <label htmlFor="address2" className="block text-sm font-medium text-secondary-700 mb-1">
-              Apartment, suite, etc. (optional)
-            </label>
-            <input
-              id="address2"
-              name="address2"
-              type="text"
-              value={address.address2}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-secondary-300 px-3 py-2 text-sm"
-            />
-          </div>
+        </div>
+
+        {/* Address Line 1 */}
+        <div>
+          <label htmlFor="address1" className="block text-sm font-medium text-secondary-700 mb-1">
+            Address Line 1
+          </label>
+          <input
+            id="address1"
+            type="text"
+            required
+            value={address1}
+            onChange={(e) => setAddress1(e.target.value)}
+            className="w-full rounded-lg border border-secondary-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
+            placeholder="123 Main St"
+          />
+        </div>
+
+        {/* Address Line 2 */}
+        <div>
+          <label htmlFor="address2" className="block text-sm font-medium text-secondary-700 mb-1">
+            Address Line 2 (optional)
+          </label>
+          <input
+            id="address2"
+            type="text"
+            value={address2}
+            onChange={(e) => setAddress2(e.target.value)}
+            className="w-full rounded-lg border border-secondary-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
+            placeholder="Apt, suite, unit, etc."
+          />
+        </div>
+
+        {/* City / Province */}
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="city" className="block text-sm font-medium text-secondary-700 mb-1">
               City
             </label>
             <input
               id="city"
-              name="city"
               type="text"
               required
-              value={address.city}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-secondary-300 px-3 py-2 text-sm"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="w-full rounded-lg border border-secondary-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
             />
           </div>
-          <div>
-            <label htmlFor="province" className="block text-sm font-medium text-secondary-700 mb-1">
-              State / Province
-            </label>
-            <input
-              id="province"
-              name="province"
-              type="text"
-              required
-              value={address.province}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-secondary-300 px-3 py-2 text-sm"
-            />
-          </div>
+        </div>
+
+        {/* ZIP / Country */}
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="zip" className="block text-sm font-medium text-secondary-700 mb-1">
               ZIP / Postal Code
             </label>
             <input
               id="zip"
-              name="zip"
               type="text"
               required
-              value={address.zip}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-secondary-300 px-3 py-2 text-sm"
+              value={zip}
+              onChange={(e) => setZip(e.target.value)}
+              className="w-full rounded-lg border border-secondary-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
             />
           </div>
           <div>
@@ -161,11 +208,9 @@ export function ShippingForm({ customer, onSubmit, isPending }: ShippingFormProp
             </label>
             <select
               id="country"
-              name="country"
-              required
-              value={address.country}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-secondary-300 px-3 py-2 text-sm"
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              className="w-full rounded-lg border border-secondary-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
             >
               <option value="US">United States</option>
               <option value="CA">Canada</option>
@@ -177,25 +222,30 @@ export function ShippingForm({ customer, onSubmit, isPending }: ShippingFormProp
               <option value="BA">Bosnia and Herzegovina</option>
             </select>
           </div>
-          <div className="sm:col-span-2">
-            <label htmlFor="phone" className="block text-sm font-medium text-secondary-700 mb-1">
-              Phone (optional)
-            </label>
-            <input
-              id="phone"
-              name="phone"
-              type="tel"
-              value={address.phone}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-secondary-300 px-3 py-2 text-sm"
-            />
-          </div>
         </div>
-      </div>
 
-      <Button type="submit" className="w-full" size="lg" disabled={isPending}>
-        {isPending ? 'Processing...' : 'Continue to Delivery'}
-      </Button>
-    </form>
+        {/* Phone */}
+        <div>
+          <label htmlFor="phone" className="block text-sm font-medium text-secondary-700 mb-1">
+            Phone (optional)
+          </label>
+          <input
+            id="phone"
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="w-full rounded-lg border border-secondary-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
+            placeholder="+1 (555) 000-0000"
+          />
+        </div>
+
+        {/* Submit */}
+        <div className="pt-2">
+          <Button type="submit" disabled={isPending} className="w-full" size="lg">
+            Continue to Delivery →
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }
