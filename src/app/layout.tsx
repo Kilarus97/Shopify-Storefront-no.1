@@ -5,6 +5,7 @@ import { Footer } from '@/components/layout/footer';
 import { CartProvider } from '@/lib/context/cart-context';
 import { CartDrawer } from '@/components/cart/cart-drawer';
 import { getCollections } from '@/lib/shopify/collection';
+import { WishlistProvider } from '@/lib/context/wishlist-context';
 
 export const metadata: Metadata = {
   title: 'Shopify Storefront',
@@ -36,9 +37,11 @@ export default async function RootLayout({
       </head>
       <body className="min-h-full flex flex-col font-sans bg-white text-secondary-900">
         <CartProvider>
-          <Header collections={collections} />
-          <main className="flex-1">{children}</main>
-          <Footer collections={collections} />
+          <WishlistProvider>
+            <Header collections={collections} />
+            <main className="flex-1">{children}</main>
+            <Footer collections={collections} />
+          </WishlistProvider>
           <CartDrawer />
         </CartProvider>
       </body>

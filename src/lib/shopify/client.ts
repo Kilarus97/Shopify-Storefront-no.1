@@ -39,6 +39,8 @@ export async function shopifyFetch<T>({
     fetchOptions.next = { revalidate, ...(tags ? { tags } : {}) };
   }
 
+  console.log('🔍 Fetching:', SHOPIFY_GRAPHQL_ENDPOINT);
+
   const response = await fetch(SHOPIFY_GRAPHQL_ENDPOINT, fetchOptions);
 
   // ← DODAJ OVO

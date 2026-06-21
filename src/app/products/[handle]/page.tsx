@@ -9,8 +9,8 @@ import { AddToCart } from '@/components/cart/add-to-cart';
 import { RelatedProducts } from '@/components/product/related-products';
 import { Breadcrumbs } from '@/components/layout/breadcrumbs';
 import { JsonLd } from '@/components/seo/json-ld';
+import { WishlistButtonWrapper } from '@/components/wishlist/wishlist-button-wrapper';
 import type { Product as ProductType, ProductVariant } from '@/lib/types';
-import { useState } from 'react';
 
 interface ProductPageProps {
   params: { handle: string };
@@ -87,11 +87,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
               />
             )}
 
-            <AddToCart
-              className="w-full rounded-lg bg-primary-500 py-2.5 text-sm font-medium text-black  hover:bg-primary-600 transition-colors border border-black"
-              product={product}
-              variant={product.variants?.[0]}
-            />
+            {/* Add to cart + Wishlist */}
+            <div className="flex gap-3">
+              <AddToCart
+                className="flex-1 rounded-lg bg-primary-500 py-2.5 text-sm font-medium text-black hover:bg-primary-600 transition-colors border border-black"
+                product={product}
+                variant={product.variants?.[0]}
+              />
+              <WishlistButtonWrapper
+                product={product}
+                variant={product.variants?.[0]}
+              />
+            </div>
           </div>
         </div>
 

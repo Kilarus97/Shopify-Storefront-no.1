@@ -11,7 +11,7 @@ export async function shopifyAdminFetch<T>({
   variables,
 }: AdminFetchOptions): Promise<{ data: T }> {
   const token = process.env.SHOPIFY_ADMIN_API_TOKEN;
-  const endpoint = `https://${SHOPIFY_STORE_DOMAIN}/admin/api/${ADMIN_API_VERSION}/graphql.json`;
+  const endpoint = `https://usagi-it.myshopify.com/admin/api/${ADMIN_API_VERSION}/graphql.json`;
 
   console.log('📡 Admin API call:', endpoint);
 

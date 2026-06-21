@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useWishlist } from '@/lib/context/wishlist-context';
 import { cn } from '@/lib/utils/cn';
+
 
 interface HeaderProps {
   collections: Array<{ handle: string; title: string }>;
@@ -10,6 +12,7 @@ interface HeaderProps {
 
 export function Header({ collections }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { count } = useWishlist();
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-secondary-200 bg-white/80 backdrop-blur-md">
@@ -30,6 +33,17 @@ export function Header({ collections }: HeaderProps) {
 
         {/* Actions */}
         <div className="flex items-center gap-4">
+          <Link href="/wishlist" className="relative p-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+            </svg>
+            {count > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                {count}
+              </span>
+            )}
+          </Link>
+
           <Link
             href="/search"
             className="text-secondary-500 hover:text-secondary-900 transition-colors"
