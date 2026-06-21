@@ -3,6 +3,7 @@
 import { shopifyAdminFetch } from './admin-client';
 import type { Cart } from '@/lib/types/cart';
 import type { ShippingAddress } from '@/lib/types/checkout';
+import { sendOrderConfirmation } from '@/lib/email/send-order-confirmation';
 
 export async function createOrder(
   cart: Cart,
@@ -60,6 +61,7 @@ export async function createOrder(
 
   console.log('🔍 Order create response:', JSON.stringify(data, null, 2));
 
+  // ✅ Proveri greške PRIVREME slanja email-a
   if (data.orderCreate.userErrors.length > 0) {
     return {
       success: false,
@@ -70,6 +72,24 @@ export async function createOrder(
   if (!data.orderCreate.order) {
     return { success: false, errors: ['Order creation failed'] };
   }
+
+  // ✅ Order je kreiran — pošalji email
+  const tax = cart.totalPrice * 0.08;
+  const total = cart.totalPrice + shippingPrice + tax;
+
+  // Fire-and-forget (ne čekamo response)
+  sendOrderConfirmation({
+    orderNumber: extractOrderNumber(data.orderCreate.order.name).toString(),
+    customerName: `${shippingAddress.firstName} ${shippingAddress.lastName}`,
+    email,
+    items: cart.items,
+    shippingAddress,
+    subtotal: cart.totalPrice,
+    shippingPrice,
+    tax,
+    total,
+    paymentMethod: 'Cash on Delivery',
+  }).catch(err => console.error('Email send failed:', err));
 
   return {
     success: true,

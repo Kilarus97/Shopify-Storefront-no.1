@@ -16,6 +16,20 @@ export default function OrderConfirmation() {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   useEffect(() => {
+  if (paymentStatus === 'paid' && email) {
+    // Pošalji invoice email
+    fetch('/api/send-order-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        orderNumber: confirmedOrderNumber,
+      }),
+    }).catch(err => console.error('Email API error:', err));
+  }
+}, [paymentStatus, email, confirmedOrderNumber]);
+
+  useEffect(() => {
     if (SHOPIFY_STORE_PASSWORD) {
       setShowPasswordModal(true);
     }
