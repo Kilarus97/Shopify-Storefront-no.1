@@ -7,7 +7,7 @@ import {
 interface ShopifyFetchOptions {
   query: string;
   variables?: Record<string, unknown>;
-  revalidate?: number;
+  revalidate?: number | false;
   tags?: string[];
 }
 

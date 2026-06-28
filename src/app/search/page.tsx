@@ -1,5 +1,9 @@
 import { Suspense } from 'react';
 import { searchShopify } from '@/lib/shopify/search';
+import { generateSearchResultsPageJsonLd, generateBreadcrumbJsonLd } from '@/lib/utils/seo';
+import { Metadata } from 'next';
+import { generateMetadata as genMeta } from '@/lib/utils/seo';
+import { JsonLd } from '@/components/seo/json-ld';
 import { ProductGrid } from '@/components/product/product-grid';
 import { CollectionCard } from '@/components/collection/collection-card';
 import { SearchBar } from '@/components/search/search-bar';
@@ -51,39 +55,60 @@ async function SearchResults({ searchParams }: SearchPageProps) {
 
   const { products, collections, totalResults } = await searchShopify(filters);
 
+  const searchJsonLd = generateSearchResultsPageJsonLd({
+    query: filters.query,
+    resultsCount: totalResults,
+    url: `/search?q=${encodeURIComponent(filters.query)}`,
+  });
+
+  const breadcrumbJsonLd = generateBreadcrumbJsonLd([
+    { name: 'Home', url: '/' },
+    { name: 'Search', url: '/search' },
+    { name: filters.query ? `Results for "${filters.query}"` : 'Search', url: `/search?q=${encodeURIComponent(filters.query)}` },
+  ]);
+
+
   if (totalResults === 0) {
     return (
-      <div className="py-12 text-center">
-        <p className="text-secondary-500">No results found</p>
-        <p className="mt-1 text-sm text-secondary-400">Try different keywords or filters.</p>
-      </div>
+      <>
+        <JsonLd data={searchJsonLd} />
+        <JsonLd data={breadcrumbJsonLd} />
+        <div className="py-12 text-center">
+          <p className="text-secondary-500">No results found</p>
+          <p className="mt-1 text-sm text-secondary-400">Try different keywords or filters.</p>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="space-y-8">
-      {products.length > 0 && (
-        <section>
-          <h2 className="text-lg font-semibold text-secondary-900 mb-4">
-            Products ({products.length})
-          </h2>
-          <ProductGrid products={products} columns={3} />
-        </section>
-      )}
+    <>
+      <JsonLd data={searchJsonLd} />
+      <JsonLd data={breadcrumbJsonLd} />
+      <div className="space-y-8">
+        {products.length > 0 && (
+          <section>
+            <h2 className="text-lg font-semibold text-secondary-900 mb-4">
+              Products ({products.length})
+            </h2>
+            <ProductGrid products={products} columns={3} />
+          </section>
+        )}
 
-      {collections.length > 0 && (
-        <section>
-          <h2 className="text-lg font-semibold text-secondary-900 mb-4">
-            Collections ({collections.length})
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {collections.map((collection) => (
-              <CollectionCard key={collection.id} collection={collection} />
-            ))}
-          </div>
-        </section>
-      )}
-    </div>
+        {collections.length > 0 && (
+          <section>
+            <h2 className="text-lg font-semibold text-secondary-900 mb-4">
+              Collections ({collections.length})
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {collections.map((collection) => (
+                <CollectionCard key={collection.id} collection={collection} />
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+    </>
   );
 }
 
@@ -129,3 +154,9 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
     </div>
   );
 }
+
+export const metadata: Metadata = genMeta({
+  title: 'Search | Usagi IT',
+  description: 'Search our products.',
+  url: '/search',
+});

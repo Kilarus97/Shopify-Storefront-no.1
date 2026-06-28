@@ -1,6 +1,7 @@
 'use server';
 
 import { shopifyAdminFetch } from './admin-client';
+import { shopifyFetch } from './client';
 import type { Cart } from '@/lib/types/cart';
 import type { ShippingAddress } from '@/lib/types/checkout';
 import { sendOrderConfirmation } from '@/lib/email/send-order-confirmation';
@@ -110,4 +111,19 @@ function mapCountryToCode(country: string): string {
     RS: 'RS', HR: 'HR', BA: 'BA',
   };
   return map[country] || 'US';
+}
+
+export async function getAllProductHandles(): Promise<
+  Array<{ handle: string; updatedAt: string }>
+> {
+  const query = `query { products(first: 250) { edges { node { handle updatedAt } } } }`;
+
+  const { data } = await shopifyFetch<{
+    products: { edges: Array<{ node: { handle: string; updatedAt: string } }> };
+  }>({
+    query,
+    revalidate: false,
+  });
+
+  return data.products.edges.map((e) => e.node);
 }

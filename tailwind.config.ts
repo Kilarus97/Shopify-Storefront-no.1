@@ -43,8 +43,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        heading: ['Playfair_Display', 'ui-serif', 'Georgia', 'serif'],
+        sans: ['var(--font-inter)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        heading: ['var(--font-playfair)', 'ui-serif', 'Georgia', 'serif'],
       },
       container: {
         center: true,

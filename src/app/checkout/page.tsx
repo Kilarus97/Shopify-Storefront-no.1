@@ -15,7 +15,8 @@ export default async function CheckoutPage() {
   let customer = null;
 
   if (token) {
-    customer = await getCustomer(token);
+    const customerData = await getCustomer(token);
+    customer = customerData.customer;
   }
 
   return (

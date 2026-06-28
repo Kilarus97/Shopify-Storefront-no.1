@@ -1,0 +1,17 @@
+# *
+User-agent: *
+Allow: /
+
+# *
+User-agent: *
+Disallow: /cart
+Disallow: /checkout
+Disallow: /account
+Disallow: /api
+Disallow: /wishlist
+
+# Host
+Host: https://shopify.usagi-it.com
+
+# Sitemaps
+Sitemap: https://shopify.usagi-it.com/sitemap.xml

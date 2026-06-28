@@ -1,4 +1,5 @@
 import { shopifyFetchStatic } from './client';
+import { shopifyFetch } from './client';
 import { REVALIDATE_INTERVAL } from '@/lib/constants';
 import type { Collection, Product } from '@/lib/types';
 
@@ -68,3 +69,18 @@ export async function getCollection(handle: string): Promise<Collection | null> 
     })),
   };
 }
+export async function getAllCollectionHandles(): Promise<
+  Array<{ handle: string; updatedAt: string }>
+> {
+  const query = `query { collections(first: 250) { edges { node { handle updatedAt } } } }`;
+
+  const { data } = await shopifyFetch<{
+    collections: { edges: Array<{ node: { handle: string; updatedAt: string } }> };
+  }>({
+    query,
+    revalidate: false,
+  });
+
+  return data.collections.edges.map((e) => e.node);
+}
+

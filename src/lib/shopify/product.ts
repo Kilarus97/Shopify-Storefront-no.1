@@ -1,4 +1,5 @@
 import { shopifyFetchStatic } from './client';
+import { shopifyFetch } from './client';
 import { REVALIDATE_INTERVAL } from '@/lib/constants';
 import type { Product } from '@/lib/types';
 
@@ -79,4 +80,19 @@ export async function getRelatedProducts(
     ...p,
     variants: p.variants?.edges?.map((ve: any) => ve.node) || [],
   })).slice(0, limit);
+}
+
+export async function getAllProductHandles(): Promise<
+  Array<{ handle: string; updatedAt: string }>
+> {
+  const query = `query { products(first: 250) { edges { node { handle updatedAt } } } }`;
+
+  const { data } = await shopifyFetch<{
+    products: { edges: Array<{ node: { handle: string; updatedAt: string } }> };
+  }>({
+    query,
+    revalidate: false,
+  });
+
+  return data.products.edges.map((e) => e.node);
 }
